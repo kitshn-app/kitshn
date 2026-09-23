@@ -80,6 +80,7 @@ import de.kitshn.ui.dialog.select.rememberSelectAIProviderDialogState
 import io.ktor.client.HttpClient
 import io.ktor.client.request.get
 import io.ktor.client.statement.bodyAsBytes
+import kotlin.io.encoding.Base64
 import kitshn.shared.generated.resources.Res
 import kitshn.shared.generated.resources.action_download
 import kitshn.shared.generated.resources.action_import
@@ -132,6 +133,68 @@ class RecipeImportSocialMediaDialogState(
 
     fun dismiss() {
         this.shown.value = false
+    }
+}
+
+/**
+ * Safely resolve a thumbnail URL from the social-media import script to bytes.
+ *
+ * TikTok/Instagram pages often expose lazy-load placeholders as
+ * `data:image/...;base64,...` URLs (#369). Passing those to Ktor throws
+ * `IllegalArgumentException: Expected URL scheme http or https but was data`
+ * and aborts the whole AI import. Data URLs are decoded locally instead,
+ * non-http(s) URLs are skipped, network fetches are size-limited.
+ *
+ * Returns null when there is nothing usable — callers must continue
+ * with description/AI import regardless.
+ */
+private suspend fun fetchSocialMediaImageBytes(imageUrl: String?): ByteArray? {
+    if(imageUrl.isNullOrBlank()) return null
+
+    // data:[<mediatype>][;base64],<data> — decode locally, no network
+    if(imageUrl.startsWith("data:", ignoreCase = true)) {
+        return try {
+            val base64Payload = imageUrl.substringAfter(",", missingDelimiterValue = "")
+            if(base64Payload.isBlank()) return null
+            // Guard against huge inline payloads being loaded into memory
+            if(base64Payload.length > 15_000_000) {
+                Logger.e("RecipeImportSocialMediaDialog.kt") {
+                    "Skipping oversized data: URL thumbnail (${base64Payload.length} chars)"
+                }
+                return null
+            }
+            Base64.decode(base64Payload.trim())
+        } catch(e: Exception) {
+            Logger.e("RecipeImportSocialMediaDialog.kt", e)
+            null
+        }
+    }
+
+    // Only http(s) can be fetched with Ktor — skip anything else instead of crashing
+    if(!(imageUrl.startsWith("http://", ignoreCase = true) ||
+            imageUrl.startsWith("https://", ignoreCase = true))
+    ) {
+        Logger.e("RecipeImportSocialMediaDialog.kt") {
+            "Skipping social-media thumbnail with unsupported scheme: ${imageUrl.take(64)}"
+        }
+        return null
+    }
+
+    val httpClient = HttpClient {
+        followRedirects = true
+    }
+    try {
+        val bytes = httpClient.get(imageUrl).bodyAsBytes()
+        // ~10 MB sanity cap, thumbnails should be far smaller
+        if(bytes.size > 10 * 1024 * 1024) {
+            Logger.e("RecipeImportSocialMediaDialog.kt") {
+                "Skipping oversized social-media thumbnail (${bytes.size} bytes)"
+            }
+            return null
+        }
+        return bytes
+    } finally {
+        httpClient.close()
     }
 }
 
@@ -232,12 +295,15 @@ fun RecipeImportSocialMediaDialog(
             }
 
             if(response.imageURL != null) {
-                val httpClient = HttpClient {
-                    followRedirects = true
+                val imageUrl = response.imageURL
+                try {
+                    state.data.uploadImage = fetchSocialMediaImageBytes(imageUrl)
+                } catch(e: Exception) {
+                    // Never let a broken thumbnail abort the whole AI import (#369).
+                    // Description + AI import below must still run.
+                    Logger.e("RecipeImportSocialMediaDialog.kt", e)
+                    state.data.uploadImage = null
                 }
-
-                val imageBytes = httpClient.get(response.imageURL).bodyAsBytes()
-                state.data.uploadImage = imageBytes
             }
 
             state.recipeDescription = response.description ?: ""

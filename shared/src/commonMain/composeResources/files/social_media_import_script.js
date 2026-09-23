@@ -18,7 +18,9 @@
             platformSpecificImageURL = document.getElementsByTagName("video")[0].parentElement.parentElement.parentElement.parentElement.querySelector("img").src
         }
 
-        if(platformSpecificImageURL.length < 3) platformSpecificImageURL = undefined
+        if(!platformSpecificImageURL || platformSpecificImageURL.length < 3) platformSpecificImageURL = undefined
+        // Lazy-load placeholders show up as data: URLs (#369) — prefer og:image instead
+        if(platformSpecificImageURL && platformSpecificImageURL.startsWith("data:")) platformSpecificImageURL = undefined
     }catch(e) {
         console.error(e)
     }
@@ -26,7 +28,7 @@
     const description = descriptionValues.sort(function (a, b) { return b.length - a.length; })[0];
     let imageURL = platformSpecificImageURL || document.querySelector("meta[property='og:image']")?.content
 
-    if(imageURL.length < 3) imageURL = undefined
+    if(!imageURL || imageURL.length < 3) imageURL = undefined
 
     // return different content when using WebKit
     if(/kitshnWebKit/.test(navigator.userAgent)) {
