@@ -400,4 +400,10 @@
     <string name="color_dark_gray">Cinzento escuro</string>
     <string name="color_light_gray">Cinzento Claro</string>
     <string name="color_yellow">Amarelo</string>
+    <string name="common_mtls">Certificado mTLS</string>
+    <string name="common_advanced_settings">Definições avançadas</string>
+    <string name="action_add_or_import_recipe">Adicionar ou importar uma receita</string>
+    <string name="action_add_custom_header">Adicionar cabeçalho HTTP</string>
+    <string name="action_add_mtls_certificate">Adicionar certificado mTLS</string>
+    <string name="action_edit_custom_header">Editar cabeçalho HTTP</string>
 </resources>
