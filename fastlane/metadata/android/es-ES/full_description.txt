@@ -1,0 +1,36 @@
+Desarrollada con Compose y Material 3 Expressive para ofrecer una experiencia de usuario moderna, intuitiva y adaptativa.
+
+<b>💪 Características destacadas</b>
+<ul>
+    <li>Pantalla de inicio dinámica <i></i></li>
+    <li>Interfaz de usuario</i>
+    <ul>
+      <li>Personalización con Material You</li>
+      <li>Material 3 <i>Expressive</i></li>
+      <li>Diseño adaptativo para <i>teléfonos</i>, <i>tabletas</i> y <i>dispositivos plegables</i></li>
+    </ul>
+    <li>Recetas</li>
+    <ul>
+      <li>Compatibilidad con <i>Markdown</i></li>
+      <li>Modo de cocina</li>
+        <li>Creación de temporizadores con <a href="https://kitshn.app/docs/features/timer-detection">detección de temporizadores</a></li>
+      <li><a href="https://kitshn.app/docs/features/share-wrapping.html">Enlaces a aplicaciones</a></li>
+      <li><a href="https://kitshn.app/docs/features/embedding-videos-inside-steps.html">Incrustación de vídeos</a> dentro de los pasos</li>
+      <li>Importación</li>
+        <li><a href="https://kitshn.app/docs/features/social-media-import.html">Importación desde redes sociales</a> <i>con tecnología de IA</i></li>
+        <li>Compartir enlaces con <i>kitshn</i> para importarlos</li>
+      <li>Herramienta sencilla de asignación de ingredientes</li>
+    </ul>
+    <li>Plan de comidas</li>
+    <li>Lista de la compra</li>
+    <ul>
+      <li>Modo de compra</li>
+      <li>Sincronización sin conexión</li>
+    </ul>
+    <li>Libros de recetas</li>
+    <ul>
+      <li><a href="https://kitshn.app/docs/features/favorites.html">Sistema de «Favoritos»</a></li>
+    </ul>
+</ul>
+
+Icono creado por Freepik a partir de www.flaticon.com
