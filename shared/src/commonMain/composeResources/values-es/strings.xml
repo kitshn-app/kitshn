@@ -8,7 +8,7 @@
     <string name="action_add">Agregar</string>
     <string name="acra_dialog_button_positive">Enviar</string>
     <string name="acra_comment_helper">Si lo deseas, puedes comentar cómo ocurrió este error.</string>
-    <string name="action_remove">Remover</string>
+    <string name="action_remove">Eliminar</string>
     <string name="action_show_all_recipes">Mostrar todas las recetas</string>
     <string name="action_move">Mover</string>
     <string name="action_minus">Inferior</string>
@@ -196,7 +196,7 @@
     <string name="action_edit_entry">Editar entrada</string>
     <string name="action_edit_recipe">Editar receta</string>
     <string name="common_comment">Comentar</string>
-    <string name="action_mark_as_done">Marcar como terminado</string>
+    <string name="action_mark_as_done">Marcar como completado</string>
     <string name="action_minus_one_week">- una semana</string>
     <string name="action_no">No</string>
     <string name="common_start_date">Fecha de inicio</string>
@@ -368,4 +368,29 @@
     <string name="common_ai_provider">Proveedor de IA</string>
     <string name="common_by">Por</string>
     <string name="common_color">Color</string>
+    <string name="action_add_or_import_recipe">Añadir o importar receta</string>
+    <string name="action_choose_existing_photo">Selecciona una foto existente</string>
+    <string name="action_ignore">Ignorar</string>
+    <string name="common_advanced_settings">Configuración avanzada</string>
+    <string name="action_add_custom_header">Añadir cabecera HTTP</string>
+    <string name="action_add_mtls_certificate">Añadir certificado mTLS</string>
+    <string name="action_edit_custom_header">Editar cabecera HTTP</string>
+    <string name="common_mtls">Certificado mTLS</string>
+    <string name="common_shopping_list">Lista de la compra</string>
+    <string name="ios_timer_dialog_action_install_shortcut">Instalar acceso directo</string>
+    <string name="ios_timer_dialog_body">Apple no permite que las aplicaciones de terceros pongan en marcha temporizadores directamente en iOS. kitshn utiliza una solución alternativa que pasa por la aplicación «Atajos». Para empezar, tendrás que instalar el atajo » %1$s «.</string>
+    <string name="onboarding_sign_in_error_instance_not_reachable_local_network_hint">Activa el permiso «Red local» para kitshn en la configuración del sistema cuando te conectes a un servidor local.</string>
+    <string name="onboarding_sign_in_hint_credentials_required">Introduce un nombre de usuario y una contraseña, un token de API o utiliza la opción «Iniciar sesión con el navegador web».</string>
+    <string name="recipe_import_auto_sort_ingredients">Ordenar automáticamente los ingredientes</string>
+    <string name="recipe_import_auto_sort_ingredients_description">Asignar ingrediente si el texto del paso incluye el nombre del ingrediente</string>
+    <string name="recipe_creation_type_ai_label">Crea con IA</string>
+    <string name="recipe_creation_type_ai_description">Sube imágenes o introduce una receta en formato de texto y deja que la IA la redacte por ti.</string>
+    <string name="recipe_creation_type_import_social_media_label">Importar de redes sociales</string>
+    <string name="recipe_creation_type_import_social_media_description">Añade recetas desde Instagram o TikTok usando IA.</string>
+    <string name="recipe_creation_type_import_social_media_disclaimer">Actualmente, solo se admiten de forma activa Instagram y TikTok. Es posible que también se admitan otras plataformas.</string>
+    <string name="recipe_creation_type_manual_label">Crear manualmente</string>
+    <string name="recipe_creation_type_manual_description">Introduce manualmente tus propios ingredientes, pasos y detalles.</string>
+    <string name="recipe_step_step_description">Añade instrucciones para este paso</string>
+    <string name="settings_section_appearance_hide_activity_label">Ocultar la sección de actividad</string>
+    <string name="settings_section_appearance_hide_activity_description">Oculta la sección de actividades en la vista de detalles de la receta</string>
 </resources>
