@@ -65,12 +65,12 @@
     <string name="action_sign_out">Cerrar sesión</string>
     <string name="action_sign_out_description">Olvidé las credenciales</string>
     <string name="action_start_cooking">Iniciar modo cocinar</string>
-    <string name="action_support">Financiar</string>
+    <string name="action_support">Soporte</string>
     <string name="action_upload">Subir</string>
     <string name="action_yes">Sí</string>
     <string name="app_name">kitshn</string>
     <string name="bugsnag_dialog_button_negative">No, no permitir</string>
-    <string name="bugsnag_dialog_title">¿Permitir reporte de cuelgues?</string>
+    <string name="bugsnag_dialog_title">¿Permitir reporte de errores?</string>
     <string name="common_allocate_ingredients">Asignar ingredientes</string>
     <string name="common_api_token">Token API</string>
     <string name="common_contact">Contacto</string>
@@ -393,4 +393,5 @@
     <string name="recipe_step_step_description">Añade instrucciones para este paso</string>
     <string name="settings_section_appearance_hide_activity_label">Ocultar la sección de actividad</string>
     <string name="settings_section_appearance_hide_activity_description">Oculta la sección de actividades en la vista de detalles de la receta</string>
+    <string name="common_activity">Actividad</string>
 </resources>
