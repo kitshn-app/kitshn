@@ -1,0 +1,2 @@
+🐛 Fixed
+- Fixed a crash when loading cook logs from Tandoor v2.7 servers

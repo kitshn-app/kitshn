@@ -1,2 +1,2 @@
 Fixed
-- Updated sign-in so it keeps working with upcoming Tandoor server versions
+- Fixed a crash when loading cook logs from Tandoor v2.7 servers

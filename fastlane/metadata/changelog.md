@@ -1,20 +1,16 @@
-### ✌️ kitshn 2.1.4
+### ✌️ kitshn 2.1.5
 
 #### 🐛 Fixed
-- Updated sign-in so it keeps working with upcoming Tandoor server versions
+- Fixed a crash when loading cook logs from Tandoor v2.7 servers
 
 ---
 
 <details><summary>Full commit list</summary>
 
 ```
-- fix(api/auth): replaced `api-token-auth` with the django-allauth headless api
-- fix(web/docs): update translate.md
-- fix(README.md): badge image heights in installation section
-- feat: update installation badges
-- feat: rebranding and moving to the kitshn-app org
+- fix(api): crash due to cooklog api change in Tandoor v2.7
 ```
 
 </details>
 
-**Full Changelog**: https://github.com/aimok04/kitshn/compare/v2.1.3...v2.1.4
+**Full Changelog**: https://github.com/aimok04/kitshn/compare/v2.1.4...v2.1.5
