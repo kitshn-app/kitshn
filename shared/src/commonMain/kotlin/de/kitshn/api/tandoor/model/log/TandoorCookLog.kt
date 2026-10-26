@@ -18,7 +18,7 @@ class TandoorCookLogCreatedBy(
 class TandoorCookLog(
     val id: Int,
     val recipe: Int,
-    val servings: Int? = null,
+    val servings: Double? = null,
     val rating: Int? = null,
     val comment: String? = null,
     val created_by: TandoorCookLogCreatedBy,
