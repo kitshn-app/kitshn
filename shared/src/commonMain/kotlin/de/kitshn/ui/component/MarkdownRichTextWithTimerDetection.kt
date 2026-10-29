@@ -116,6 +116,18 @@ fun MarkdownRichTextWithTimerDetection(
             }
         }
 
+        val titleLargeBase = MaterialTheme.typography.titleLarge
+        fun scaledHeading(factor: Float) = titleLargeBase.run {
+            if(fontSize.isSpecified && fontSize.isSp) {
+                copy(
+                    fontSize = (fontSize.value * factor).sp,
+                    lineHeight = (fontSize.value * factor + 4).sp
+                )
+            } else {
+                this
+            }
+        }
+
         val bodyMedium = MaterialTheme.typography.bodyMedium.run {
             if(fontSize.isSpecified && fontSize.isSp) {
                 copy(
@@ -133,6 +145,12 @@ fun MarkdownRichTextWithTimerDetection(
                 content = md,
                 imageTransformer = Coil3ImageTransformerImpl,
                 typography = markdownTypography(
+                    h1 = scaledHeading(1.5f),
+                    h2 = scaledHeading(1.35f),
+                    h3 = scaledHeading(1.2f),
+                    h4 = scaledHeading(1.1f),
+                    h5 = scaledHeading(1.0f),
+                    h6 = scaledHeading(1.0f),
                     text = bodyLarge,
                     paragraph = bodyLarge,
                     ordered = bodyLarge,
