@@ -3,6 +3,9 @@
 package de.kitshn
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -77,6 +80,10 @@ class KitshnViewModel(
 
     val isOnline: StateFlow<Boolean> = session.isOnline
 
+    /** `true` when the app runs without a Tandoor server. Only the shopping list is available. */
+    var localOnlyMode by mutableStateOf(false)
+        private set
+
     val favorites = FavoritesViewModel()
 
     val uiState = UiStateModel()
@@ -127,6 +134,12 @@ class KitshnViewModel(
             if(onBeforeCredentialsCheck(credentials)) return@launch
 
             if(credentials == null) {
+                if(settings.getLocalOnlyMode.first()) {
+                    localOnlyMode = true
+                    onLaunched()
+                    return@launch
+                }
+
                 navHostController!!.navigate("onboarding") {
                     popUpTo("main") {
                         inclusive = true
@@ -291,7 +304,22 @@ class KitshnViewModel(
         }
     }
 
+    /** Skip server sign-in and use the local shopping list only. */
+    fun enterLocalOnlyMode() {
+        localOnlyMode = true
+        settings.setLocalOnlyMode(true)
+        settings.setOnboardingCompleted(true)
+
+        navHostController?.navigate("main") {
+            popUpTo("onboarding") {
+                inclusive = true
+            }
+        }
+    }
+
     fun signIn(client: TandoorClient, credentials: TandoorCredentials) {
+        localOnlyMode = false
+        settings.setLocalOnlyMode(false)
         session.signIn(client, credentials)
 
         navHostController?.navigate("onboarding/welcome")
@@ -305,6 +333,8 @@ class KitshnViewModel(
     }
 
     fun signOut() {
+        localOnlyMode = false
+        settings.setLocalOnlyMode(false)
         settings.setOnboardingCompleted(false)
         session.signOut()
         // Runs on the application scope so the teardown completes even if the
