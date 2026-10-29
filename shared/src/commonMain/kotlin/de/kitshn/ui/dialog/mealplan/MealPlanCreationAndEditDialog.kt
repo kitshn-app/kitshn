@@ -277,7 +277,7 @@ fun MealPlanCreationAndEditDialog(
                                 if(recipeId == null) return@KitshnFormRecipeSearchFieldItem
 
                                 client.container.recipeOverview[recipeId]?.servings?.let {
-                                    servings = value?.toDouble()
+                                    servings = it?.toDouble()
                                 }
                             },
 
