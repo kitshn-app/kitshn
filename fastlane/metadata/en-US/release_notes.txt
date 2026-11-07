@@ -1,2 +1,4 @@
-Fixed
-- Fixed a crash when loading cook logs from Tandoor v2.7 servers
+🐛 Fixed
+- Fixed sign-in failing on iOS
+- Picking a recipe in a meal plan no longer messes up the servings
+- Social media (TikTok/Instagram) AI import no longer fails on certain thumbnails

@@ -1,0 +1,3 @@
+🐛 Fixed
+- Picking a recipe in a meal plan no longer messes up the servings
+- Social media (TikTok/Instagram) AI import no longer fails on certain thumbnails
