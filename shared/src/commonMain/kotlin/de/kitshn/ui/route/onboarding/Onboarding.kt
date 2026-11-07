@@ -15,6 +15,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MediumFloatingActionButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,6 +27,7 @@ import kitshn.shared.generated.resources.Res
 import kitshn.shared.generated.resources.action_next
 import kitshn.shared.generated.resources.app_name
 import kitshn.shared.generated.resources.onboarding_introduction
+import kitshn.shared.generated.resources.onboarding_use_without_server
 import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
@@ -74,6 +76,14 @@ fun RouteOnboarding(
                         Text(
                             text = stringResource(Res.string.onboarding_introduction)
                         )
+                    }
+
+                    Spacer(Modifier.height(16.dp))
+
+                    TextButton(
+                        onClick = { p.vm.enterLocalOnlyMode() }
+                    ) {
+                        Text(stringResource(Res.string.onboarding_use_without_server))
                     }
                 }
             }

@@ -60,6 +60,7 @@ const val KEY_SETTINGS_SHOPPING_SUPERMARKET = "shopping_supermarket"
 const val KEY_SETTINGS_SHOPPING_LISTS = "shopping_lists"
 
 const val KEY_SETTINGS_ONBOARDING_COMPLETED = "onboarding_completed"
+const val KEY_SETTINGS_LOCAL_ONLY_MODE = "local_only_mode"
 const val KEY_SETTINGS_TANDOOR_CREDENTIALS = "tandoor_credentials"
 const val KEY_SETTINGS_TANDOOR_TIMEOUT_SETTINGS = "tandoor_timeout_settings"
 
@@ -105,6 +106,13 @@ class SettingsViewModel : ViewModel() {
 
     fun setOnboardingCompleted(done: Boolean) =
         obs.putBoolean(KEY_SETTINGS_ONBOARDING_COMPLETED, done)
+
+    // local-only mode: use the app without a Tandoor server (shopping list only)
+    val getLocalOnlyMode: Flow<Boolean> =
+        obs.getBooleanFlow(KEY_SETTINGS_LOCAL_ONLY_MODE, false)
+
+    fun setLocalOnlyMode(enabled: Boolean) =
+        obs.putBoolean(KEY_SETTINGS_LOCAL_ONLY_MODE, enabled)
 
     // credentials — stored in platform-specific encrypted storage
     val getTandoorCredentials: Flow<TandoorCredentials?> = secureStore.getCredentials()

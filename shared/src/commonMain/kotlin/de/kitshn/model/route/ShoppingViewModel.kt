@@ -95,6 +95,8 @@ class ShoppingViewModel(
 
     suspend fun update() {
         while(client == null) {
+            // nothing to sync without a server
+            if(p.vm.localOnlyMode) return
             delay(50)
         }
 

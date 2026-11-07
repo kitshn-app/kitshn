@@ -75,9 +75,12 @@ enum class AppDestinations(
 
 @Composable
 fun RouteMain(p: RouteParameters) {
-    if(p.vm.tandoorClient == null) return
+    val localOnlyMode = p.vm.localOnlyMode
+    if(p.vm.tandoorClient == null && !localOnlyMode) return
 
-    var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.HOME) }
+    var currentDestination by rememberSaveable {
+        mutableStateOf(if(localOnlyMode) AppDestinations.SHOPPING else AppDestinations.HOME)
+    }
     val mainSubNavHostController = rememberAlternateNavController()
 
     val destination by mainSubNavHostController.currentBackStackEntryAsState()
@@ -100,8 +103,8 @@ fun RouteMain(p: RouteParameters) {
         ),
         navigationSuiteItems = {
             AppDestinations.entries.forEach {
-                // don't display when in offline mode and destination isn't offline ready
-                if(isOffline && !it.offlineReady) return@forEach
+                // don't display when offline or in local-only mode and destination isn't offline ready
+                if((isOffline || localOnlyMode) && !it.offlineReady) return@forEach
 
                 item(
                     icon = {

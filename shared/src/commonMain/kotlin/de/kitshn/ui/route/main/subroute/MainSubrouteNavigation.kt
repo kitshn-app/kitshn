@@ -18,7 +18,7 @@ fun MainSubrouteNavigation(
 
     NavHost(
         navController = controller,
-        startDestination = "home",
+        startDestination = if(vm.localOnlyMode) "shopping" else "home",
         enterTransition = { fadeIn() },
         exitTransition = { fadeOut() }
     ) {
