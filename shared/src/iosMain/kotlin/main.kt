@@ -26,6 +26,7 @@ import de.kitshn.actions.handlers.handleAppLink
 import de.kitshn.di.initKoin
 import de.kitshn.ui.component.buttons.BackButton
 import de.kitshn.ui.component.buttons.BackButtonType
+import de.kitshn.ui.theme.StatusBarHostViewController
 import kitshn.shared.generated.resources.Res
 import kitshn.shared.generated.resources.allStringResources
 import kotlinx.coroutines.runBlocking
@@ -41,7 +42,7 @@ private val koinInitialized: Unit by lazy { initKoin(); Unit }
 @OptIn(ExperimentalKermitApi::class, ExperimentalComposeUiApi::class)
 fun MainViewController(
     subscriptionUI: () -> UIViewController
-): UIViewController = ComposeUIViewController {
+): UIViewController = StatusBarHostViewController(ComposeUIViewController {
     Logger.setLogWriters(
         OSLogWriter(),
         NSLogWriter(),
@@ -100,7 +101,7 @@ fun MainViewController(
     LaunchedEffect(mIsSubscribed) {
         vm?.uiState?.iosIsSubscribed = mIsSubscribed
     }
-}
+})
 
 fun handleSubscriptionChange(isSubscribed: Boolean) {
     mIsSubscribed = isSubscribed

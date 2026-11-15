@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.uikit.LocalUIViewController
 import co.touchlab.crashkios.bugsnag.BugsnagKotlin
 import com.eygraber.uri.Uri
 import de.kitshn.ui.dialog.LaunchTimerInfoBottomSheetState
@@ -19,7 +20,6 @@ import platform.Foundation.currentLocale
 import platform.UIKit.UIActivityViewController
 import platform.UIKit.UIApplication
 import platform.UIKit.UIViewController
-import platform.UIKit.UIWindow
 import platform.UIKit.popoverPresentationController
 import platform.posix.exit
 
@@ -113,18 +113,19 @@ actual val isLaunchTimerHandlerImplemented = true
 
 @Composable
 actual fun shareContentHandler(): (title: String, text: String) -> Unit {
+    val viewController = LocalUIViewController.current
+
     return { title, text ->
         val activityController = UIActivityViewController(
             activityItems = listOf(text),
             applicationActivities = null,
         )
 
-        val window = UIApplication.sharedApplication.windows().first() as UIWindow?
         activityController.popoverPresentationController()?.sourceView =
-            window
+            viewController.view
         activityController.setTitle(title)
 
-        window?.rootViewController?.presentViewController(
+        viewController.presentViewController(
             activityController as UIViewController,
             animated = true,
             completion = null,
