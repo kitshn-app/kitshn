@@ -333,7 +333,7 @@ fun ViewRecipeDetails(
         sortedStepsList.forEach {
             sortedIngredientsList.addAll(it.ingredients)
 
-            // merge ingredients if they have equal food, unit and note
+            // merge ingredients if they have equal food and unit (notes are dropped)
             it.ingredients.forEachIndexed { index, ingredient ->
                 val duplicateIngredientIndex =
                     sortedAndMergedIngredientsList.indexOfFirst { duplIngredient ->
@@ -341,7 +341,6 @@ fun ViewRecipeDetails(
                         if(duplIngredient.no_amount) return@indexOfFirst false
                         if(ingredient.food?.id != duplIngredient.food?.id) return@indexOfFirst false
                         if(ingredient.unit?.id != duplIngredient.unit?.id) return@indexOfFirst false
-                        if(ingredient.note != duplIngredient.note) return@indexOfFirst false
                         return@indexOfFirst true
                     }
 
@@ -362,7 +361,7 @@ fun ViewRecipeDetails(
                                 food = ingredient.food,
                                 unit = ingredient.unit,
                                 amount = ingredient.amount + duplicateIngredient.amount,
-                                note = ingredient.note,
+                                note = null,
                                 order = -1,
                                 is_header = ingredient.is_header,
                                 no_amount = ingredient.no_amount,
