@@ -49,11 +49,6 @@ class TandoorRequestsError(
 
 private const val MAX_ERROR_BODY_LENGTH = 4_000
 
-/**
- * Tandoor returns actionable API errors in the response body (for example
- * `{"detail": "..."}` or `{"error": true, "msg": "..."}`). Surface that text
- * instead of reducing every 4xx/5xx response to its HTTP status code.
- */
 internal fun extractTandoorErrorMessage(body: String): String? {
     val trimmed = body.trim()
     if(trimmed.isEmpty()) return null
@@ -70,7 +65,6 @@ internal fun extractTandoorErrorMessage(body: String): String? {
             collectErrorPaths(element, path = "")
         }
     } catch(_: Exception) {
-        // Plain-text error pages are useful; HTML is not.
         if(trimmed.startsWith("<")) return null
         listOf(trimmed)
     }
@@ -98,7 +92,6 @@ private fun collectErrorValues(element: JsonElement): List<String> = when(elemen
     }
 }
 
-/** Keeps nested serializer paths such as `steps.0.ingredients.0.food.name`. */
 private fun collectErrorPaths(element: JsonElement, path: String): List<String> = when(element) {
     is JsonPrimitive -> if(element.isString && element.content.isNotBlank()) {
         listOf(if(path.isBlank()) element.content else "$path: ${element.content}")
@@ -106,8 +99,7 @@ private fun collectErrorPaths(element: JsonElement, path: String): List<String> 
         emptyList()
     }
     is JsonArray -> element.flatMapIndexed { index, value ->
-        // Validation messages are arrays attached to a field (`name: [...]`),
-        // while nested serializer errors need their step/ingredient index.
+        // Field validation uses a flat array; nested objects need an index.
         val nextPath = if(value is JsonPrimitive) {
             path
         } else if(path.isBlank()) {
