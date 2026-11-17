@@ -55,12 +55,15 @@ fun BaseUnitSearchField(
         unitRepo.sync()
     }
 
-    val unitList by remember(searchText) {
+    // fromDropdown is a key so picking an entry that equals the typed text still clears the list (#432)
+    val unitList by remember(searchText, fromDropdown) {
         if (searchText.isBlank() || fromDropdown) flowOf(emptyList())
         else unitRepo.search(searchText)
     }.collectAsState(emptyList())
 
-    if (unitList.isNotEmpty()) isExpanded = true
+    LaunchedEffect(unitList) {
+        if (unitList.isNotEmpty()) isExpanded = true
+    }
 
     ExposedDropdownMenuBox(
         modifier = dropdownMenuModifier,
