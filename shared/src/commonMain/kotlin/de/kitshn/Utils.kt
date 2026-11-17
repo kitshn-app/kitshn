@@ -40,7 +40,6 @@ import kotlinx.datetime.LocalDate
 import kotlinx.datetime.LocalDateTime
 import kotlinx.datetime.LocalTime
 import kotlinx.datetime.TimeZone
-import kotlinx.datetime.atStartOfDayIn
 import kotlinx.datetime.format
 import kotlinx.datetime.format.FormatStringsInDatetimeFormats
 import kotlinx.datetime.format.byUnicodePattern
@@ -296,7 +295,8 @@ fun Boolean.toTFString(): String {
 @OptIn(FormatStringsInDatetimeFormats::class)
 fun String.parseTandoorDate(): LocalDate {
     if(this.length > 14) {
-        return Instant.parse(this).toLocalDateTime(TimeZone.currentSystemDefault()).date
+        // Meal-plan dates are UTC calendar days (#398, #423).
+        return Instant.parse(this).toLocalDateTime(TimeZone.UTC).date
     }
 
     // legacy for version < 1.15.18
@@ -308,8 +308,8 @@ fun String.parseIsoTime(): LocalDateTime {
 }
 
 fun LocalDate.toStartOfDayString(): String {
-    return this.atStartOfDayIn(TimeZone.currentSystemDefault())
-        .toLocalDateTime(TimeZone.UTC)
+    // Send UTC midnight so the stored day matches the picked day (#398, #423).
+    return LocalDateTime(this, LocalTime(0, 0))
         .format(LocalDateTime.Formats.ISO) + "Z"
 }
 

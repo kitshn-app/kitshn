@@ -101,7 +101,10 @@ fun RouteMainSubrouteMealplanScaffoldContent(
                         MealPlanDayCard(
                             day = day,
                             mealPlanItems = list.toMutableList().filter { mealPlan ->
-                                mealPlan.from_date.parseTandoorDate() == day || mealPlan.to_date.parseTandoorDate() == day
+                                // multi-day plans show on every day in range (#398)
+                                val from = mealPlan.from_date.parseTandoorDate()
+                                val to = mealPlan.to_date.parseTandoorDate()
+                                day in from..to
                             }.sortedBy { mealPlan ->
                                 mealPlan.meal_type.time
                             },
