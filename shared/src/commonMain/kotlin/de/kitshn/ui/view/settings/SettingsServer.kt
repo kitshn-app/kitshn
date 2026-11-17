@@ -51,8 +51,10 @@ import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import de.kitshn.BackHandler
 import de.kitshn.api.tandoor.TandoorRequestState
+import de.kitshn.api.tandoor.rememberTandoorRequestState
 import de.kitshn.closeAppHandler
 import de.kitshn.launchWebsiteHandler
+import de.kitshn.ui.TandoorRequestErrorHandler
 import de.kitshn.ui.component.buttons.BackButton
 import de.kitshn.ui.component.settings.SettingsListItem
 import de.kitshn.ui.component.settings.SettingsListItemPosition
@@ -96,6 +98,7 @@ fun ViewSettingsServer(
     var showVersionCompatibilityBottomSheet by remember { mutableStateOf(false) }
 
     var showDataManagementDialog by remember { mutableStateOf(false) }
+    val manageSpaceRequestState = rememberTandoorRequestState()
     var showAdvancedSettings by remember { mutableStateOf(false) }
 
     val navigateBack: (() -> Unit)? = if (showAdvancedSettings) {
@@ -330,7 +333,10 @@ fun ViewSettingsServer(
                 Button(
                     onClick = {
                         coroutineScope.launch {
-                            val spaceId = p.vm.tandoorClient?.space?.current()?.id ?: -1
+                            // space lookup fails when the server is unreachable (#415)
+                            val spaceId = manageSpaceRequestState.wrapRequest {
+                                p.vm.tandoorClient?.space?.current()?.id
+                            } ?: return@launch
                             launchWebsiteHandler.invoke("${p.vm.tandoorClient?.credentials?.instanceUrl}/space-manage/${spaceId}")
                         }
                     }
@@ -340,4 +346,6 @@ fun ViewSettingsServer(
             }
         )
     }
+
+    TandoorRequestErrorHandler(manageSpaceRequestState)
 }
