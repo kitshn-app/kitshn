@@ -446,7 +446,7 @@ fun RecipeImportSocialMediaDialog(
                                                         stringResource(
                                                             Res.string.error_recipe_could_not_be_loaded
                                                         )
-                                                    }: ${fetchAiRequestState.error?.message}"
+                                                    }: ${fetchWebsiteRequestState.error?.message}"
 
                                                     else -> stringResource(Res.string.recipe_creation_type_import_social_media_disclaimer)
                                                 }
