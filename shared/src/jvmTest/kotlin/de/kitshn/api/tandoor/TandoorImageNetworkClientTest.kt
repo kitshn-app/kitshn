@@ -28,7 +28,6 @@ class TandoorImageNetworkClientTest {
         server.start()
         val url = "http://127.0.0.1:${server.address.port}"
         val client = TandoorClient(TandoorCredentials(url))
-        // Reuse the same adapter, just as Coil's NetworkFetcher.Factory does.
         val networkClient = TandoorImageNetworkClient(client)
         try {
             val timeouts = listOf(
