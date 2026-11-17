@@ -202,6 +202,7 @@
     <string name="error_couldnt_connect_to_tandoor">Es konnte keine Verbindung zu deinem Tandoor-Server hergestellt werden.</string>
     <string name="error_instance_inaccessible">Die Instanz, mit der du dich verbinden möchtest, ist nicht in dieser App eingerichtet.</string>
     <string name="error_recipe_could_not_be_loaded">Rezept konnte nicht geladen werden.</string>
+    <string name="error_recipe_name_required">Bitte gib vor dem Import einen Rezeptnamen ein.</string>
     <string name="error_social_media_post_unavailable">Der Beitrag konnte nicht gelesen werden. Er ist möglicherweise nicht verfügbar, privat oder erfordert eine Instagram-Anmeldung.</string>
     <string name="error_request">Fehlerhafte Anfrage</string>
     <string name="error_request_description">Der Server konnte nicht erreicht werden / Die Anfrage konnte vom Server nicht verarbeitet werden.</string>

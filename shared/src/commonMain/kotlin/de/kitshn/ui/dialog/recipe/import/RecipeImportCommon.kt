@@ -24,6 +24,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.carousel.HorizontalMultiBrowseCarousel
 import androidx.compose.material3.carousel.rememberCarouselState
@@ -42,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import de.kitshn.api.tandoor.TandoorRequestState
 import de.kitshn.api.tandoor.TandoorRequestStateState
+import de.kitshn.api.tandoor.TandoorRequestsError
 import de.kitshn.api.tandoor.model.recipe.TandoorRecipe
 import de.kitshn.api.tandoor.model.recipe.TandoorRecipeFromSource
 import de.kitshn.ui.component.settings.SettingsListItemPosition
@@ -50,14 +52,17 @@ import de.kitshn.ui.dialog.ChoosePhotoBottomSheet
 import de.kitshn.ui.theme.Typography
 import kitshn.shared.generated.resources.Res
 import kitshn.shared.generated.resources.action_click_to_upload_image
+import kitshn.shared.generated.resources.common_name
 import kitshn.shared.generated.resources.common_selected
 import kitshn.shared.generated.resources.common_steps
 import kitshn.shared.generated.resources.common_tags
 import kitshn.shared.generated.resources.common_title_image
+import kitshn.shared.generated.resources.error_recipe_name_required
 import kitshn.shared.generated.resources.recipe_import_auto_sort_ingredients
 import kitshn.shared.generated.resources.recipe_import_auto_sort_ingredients_description
 import kitshn.shared.generated.resources.recipe_import_divide_steps
 import kitshn.shared.generated.resources.recipe_import_divide_steps_description
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 
 // ensure recipe gets imported only once (issue #29)
@@ -94,6 +99,14 @@ class RecipeImportCommonStateData {
         onViewRecipe: (recipe: TandoorRecipe) -> Unit,
         onDismiss: () -> Unit
     ) {
+        if(recipeFromSource!!.recipe!!.name.isBlank()) {
+            throw TandoorRequestsError(
+                null,
+                null,
+                overrideMessage = getString(Res.string.error_recipe_name_required)
+            )
+        }
+
         if(url.isNotBlank()) {
             // ensure recipe gets imported only once (issue #29)
             if(IMPORT_URI_BLACKLIST.contains(url)) return
@@ -131,6 +144,24 @@ fun LazyListScope.RecipeImportCommon(
         item {
             if(displayDivider) HorizontalDivider(
                 Modifier.padding(start = 16.dp, end = 16.dp)
+            )
+        }
+
+        item {
+            var recipeName by remember { mutableStateOf(data.recipeFromSource!!.recipe!!.name) }
+
+            OutlinedTextField(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 16.dp, end = 16.dp, top = 16.dp),
+                value = recipeName,
+                onValueChange = {
+                    recipeName = it
+                    data.recipeFromSource!!.recipe!!.name = it
+                },
+                label = { Text(stringResource(Res.string.common_name)) },
+                singleLine = true,
+                isError = recipeName.isBlank()
             )
         }
 
