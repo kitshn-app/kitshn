@@ -32,11 +32,14 @@ class TandoorRequestsError(
     val overrideMessage: String? = null
 ) : Exception(throwable) {
     override val message: String
-        get() = overrideMessage ?: ((
+        get() = overrideMessage ?: buildString {
+            append(
                 throwable?.message
                     ?: (response?.request?.url.toString() + " | " + response?.request?.method.toString() + " | " + response?.status.toString())
-                )
-                + additionalText + throwable?.stackTraceToString())
+            )
+            append(additionalText)
+            throwable?.stackTraceToString()?.let(::append)
+        }
 
     /** Server answered with 4xx/5xx — reachable, but refused. */
     val isServerRefused: Boolean get() = response != null
@@ -60,10 +63,13 @@ internal fun extractTandoorErrorMessage(body: String): String? {
         val element = json.parseToJsonElement(trimmed)
         val preferred = listOf("msg", "detail", "non_field_errors")
         val preferredMessages = preferred.flatMap { key ->
-            (element as? JsonObject)?.get(key)?.let(::collectErrorStrings).orEmpty()
+            (element as? JsonObject)?.get(key)?.let(::collectErrorValues).orEmpty()
         }
-        (preferredMessages + collectErrorStrings(element).filterNot { it in preferredMessages })
-            .distinct()
+        if(preferredMessages.isNotEmpty()) {
+            preferredMessages
+        } else {
+            collectErrorPaths(element, path = "")
+        }
     } catch(_: Exception) {
         // Plain-text error pages are useful; HTML is not.
         if(trimmed.startsWith("<")) return null
@@ -71,23 +77,52 @@ internal fun extractTandoorErrorMessage(body: String): String? {
     }
 
     return messages
+        .distinct()
         .joinToString("\n\n")
         .take(MAX_ERROR_BODY_LENGTH)
         .ifBlank { null }
 }
 
-private fun collectErrorStrings(element: JsonElement): List<String> = when(element) {
+private fun collectErrorValues(element: JsonElement): List<String> = when(element) {
     is JsonPrimitive -> if(element.isString && element.content.isNotBlank()) {
         listOf(element.content)
     } else {
         emptyList()
     }
-    is JsonArray -> element.flatMap(::collectErrorStrings)
+    is JsonArray -> element.flatMap(::collectErrorValues)
     is JsonObject -> element.entries.flatMap { (key, value) ->
         if(key == "error" && value is JsonPrimitive && !value.isString) {
             emptyList()
         } else {
-            collectErrorStrings(value)
+            collectErrorValues(value)
+        }
+    }
+}
+
+/** Keeps nested serializer paths such as `steps.0.ingredients.0.food.name`. */
+private fun collectErrorPaths(element: JsonElement, path: String): List<String> = when(element) {
+    is JsonPrimitive -> if(element.isString && element.content.isNotBlank()) {
+        listOf(if(path.isBlank()) element.content else "$path: ${element.content}")
+    } else {
+        emptyList()
+    }
+    is JsonArray -> element.flatMapIndexed { index, value ->
+        // Validation messages are arrays attached to a field (`name: [...]`),
+        // while nested serializer errors need their step/ingredient index.
+        val nextPath = if(value is JsonPrimitive) {
+            path
+        } else if(path.isBlank()) {
+            "[$index]"
+        } else {
+            "$path.$index"
+        }
+        collectErrorPaths(value, nextPath)
+    }
+    is JsonObject -> element.entries.flatMap { (key, value) ->
+        if(key == "error" && value is JsonPrimitive && !value.isString) {
+            emptyList()
+        } else {
+            collectErrorPaths(value, if(path.isBlank()) key else "$path.$key")
         }
     }
 }

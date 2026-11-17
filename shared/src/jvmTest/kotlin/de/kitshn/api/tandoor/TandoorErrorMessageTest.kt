@@ -24,8 +24,14 @@ class TandoorErrorMessageTest {
             extractTandoorErrorMessage("""{"detail":"Ungültige Anmeldedaten."}""")
         )
         assertEquals(
-            "This field is required.",
+            "name: This field is required.",
             extractTandoorErrorMessage("""{"name":["This field is required."]}""")
+        )
+        assertEquals(
+            "steps.0.ingredients.0.food.name: This field may not be blank.",
+            extractTandoorErrorMessage(
+                """{"steps":[{"ingredients":[{"food":{"name":["This field may not be blank."]}}]}]}"""
+            )
         )
         assertEquals("Server unavailable", extractTandoorErrorMessage("Server unavailable"))
         assertNull(extractTandoorErrorMessage(""))
@@ -56,6 +62,7 @@ class TandoorErrorMessageTest {
             }
             assertTrue(requestError.message.contains("AI model returned no usable content"))
             assertTrue(requestError.message.contains("400"))
+            assertFalse(requestError.message.endsWith("null"))
 
             val importError = assertFailsWith<TandoorRequestsError> {
                 client.postMultipart("/ai-import/") {
