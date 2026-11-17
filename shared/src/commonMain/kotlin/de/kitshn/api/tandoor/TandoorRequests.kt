@@ -13,6 +13,7 @@ import io.ktor.client.request.request
 import io.ktor.client.request.setBody
 import io.ktor.client.request.url
 import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
 import io.ktor.client.statement.readRawBytes
 import io.ktor.client.statement.request
 import io.ktor.http.ContentType
@@ -20,7 +21,9 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 
 class TandoorRequestsError(
     val throwable: Throwable?,
@@ -40,6 +43,59 @@ class TandoorRequestsError(
 
     /** No response at all — transport failure (DNS, connect, timeout, TLS, …). */
     val isNetworkFailure: Boolean get() = response == null
+}
+
+private const val MAX_ERROR_BODY_LENGTH = 4_000
+
+/**
+ * Tandoor returns actionable API errors in the response body (for example
+ * `{"detail": "..."}` or `{"error": true, "msg": "..."}`). Surface that text
+ * instead of reducing every 4xx/5xx response to its HTTP status code.
+ */
+internal fun extractTandoorErrorMessage(body: String): String? {
+    val trimmed = body.trim()
+    if(trimmed.isEmpty()) return null
+
+    val messages = try {
+        val element = json.parseToJsonElement(trimmed)
+        val preferred = listOf("msg", "detail", "non_field_errors")
+        val preferredMessages = preferred.flatMap { key ->
+            (element as? JsonObject)?.get(key)?.let(::collectErrorStrings).orEmpty()
+        }
+        (preferredMessages + collectErrorStrings(element).filterNot { it in preferredMessages })
+            .distinct()
+    } catch(_: Exception) {
+        // Plain-text error pages are useful; HTML is not.
+        if(trimmed.startsWith("<")) return null
+        listOf(trimmed)
+    }
+
+    return messages
+        .joinToString("\n\n")
+        .take(MAX_ERROR_BODY_LENGTH)
+        .ifBlank { null }
+}
+
+private fun collectErrorStrings(element: JsonElement): List<String> = when(element) {
+    is JsonPrimitive -> if(element.isString && element.content.isNotBlank()) {
+        listOf(element.content)
+    } else {
+        emptyList()
+    }
+    is JsonArray -> element.flatMap(::collectErrorStrings)
+    is JsonObject -> element.entries.flatMap { (key, value) ->
+        if(key == "error" && value is JsonPrimitive && !value.isString) {
+            emptyList()
+        } else {
+            collectErrorStrings(value)
+        }
+    }
+}
+
+private suspend fun HttpResponse.errorMessageOrNull(): String? = try {
+    extractTandoorErrorMessage(bodyAsText())
+} catch(_: Exception) {
+    null
 }
 
 suspend fun TandoorClient.reqAny(
@@ -91,8 +147,14 @@ suspend fun TandoorClient.reqAny(
 
         // 4xx/5xx still means Tandoor answered — server reachable, just refused.
         reportCallSuccess()
-        if(!response.status.isSuccess())
-            throw TandoorRequestsError(null, response)
+        if(!response.status.isSuccess()) {
+            val serverMessage = response.errorMessageOrNull()
+            throw TandoorRequestsError(
+                null,
+                response,
+                additionalText = serverMessage?.let { "\n\n$it" } ?: ""
+            )
+        }
 
         return response
     } catch(e: kotlinx.coroutines.CancellationException) {
@@ -199,8 +261,14 @@ suspend fun TandoorClient.reqMultipart(
         }
 
         reportCallSuccess()
-        if(!response.status.isSuccess())
-            throw TandoorRequestsError(null, response)
+        if(!response.status.isSuccess()) {
+            val serverMessage = response.errorMessageOrNull()
+            throw TandoorRequestsError(
+                null,
+                response,
+                additionalText = serverMessage?.let { "\n\n$it" } ?: ""
+            )
+        }
 
         return response
     } catch(e: kotlinx.coroutines.CancellationException) {
