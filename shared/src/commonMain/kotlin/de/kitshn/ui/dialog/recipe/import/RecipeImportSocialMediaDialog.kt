@@ -87,11 +87,14 @@ import kitshn.shared.generated.resources.action_import
 import kitshn.shared.generated.resources.common_ai_provider
 import kitshn.shared.generated.resources.common_recipe_url
 import kitshn.shared.generated.resources.error_recipe_could_not_be_loaded
+import kitshn.shared.generated.resources.error_social_media_post_unavailable
 import kitshn.shared.generated.resources.recipe_creation_type_import_social_media_disclaimer
 import kitshn.shared.generated.resources.recipe_creation_type_import_social_media_label
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.job
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
+import org.jetbrains.compose.resources.getString
 import org.jetbrains.compose.resources.stringResource
 
 val SOCIAL_MEDIA_IMPORT_DOMAINS = listOf(
@@ -104,6 +107,7 @@ val SOCIAL_MEDIA_IMPORT_DOMAINS = listOf(
 
 private const val MAX_DATA_URL_CHARS = 15_000_000
 private const val MAX_THUMBNAIL_BYTES = 10 * 1024 * 1024
+private const val SOCIAL_MEDIA_IMPORT_TIMEOUT_MS = 20_000L
 
 @Composable
 fun rememberRecipeImportSocialMediaDialogState(): RecipeImportSocialMediaDialogState {
@@ -276,11 +280,18 @@ fun RecipeImportSocialMediaDialog(
         delay(2000)
 
         fetchWebsiteRequestState.wrapRequest {
-            var response: SocialMediaImportScriptResponse? = null
-            while(response == null) {
-                delay(1000)
-                response = webViewNavigator.runSocialMediaImportScript()
-            }
+            val response = withTimeoutOrNull(SOCIAL_MEDIA_IMPORT_TIMEOUT_MS) {
+                var scriptResponse: SocialMediaImportScriptResponse? = null
+                while(scriptResponse == null) {
+                    delay(1000)
+                    scriptResponse = webViewNavigator.runSocialMediaImportScript()
+                }
+                scriptResponse
+            } ?: throw TandoorRequestsError(
+                null,
+                null,
+                overrideMessage = getString(Res.string.error_social_media_post_unavailable)
+            )
 
             if(response.imageURL != null) {
                 val imageUrl = response.imageURL
@@ -436,7 +447,7 @@ fun RecipeImportSocialMediaDialog(
                                                         stringResource(
                                                             Res.string.error_recipe_could_not_be_loaded
                                                         )
-                                                    }: ${fetchAiRequestState.error?.message}"
+                                                    }: ${fetchWebsiteRequestState.error?.message}"
 
                                                     else -> stringResource(Res.string.recipe_creation_type_import_social_media_disclaimer)
                                                 }

@@ -121,7 +121,7 @@ data class TandoorRecipeFromSourceRecipeJson(
     val internal: Boolean,
     @SerialName("source_url")
     var sourceUrl: String,
-    val name: String,
+    var name: String,
     val description: String,
     var servings: Long? = null,
     @SerialName("servings_text")
