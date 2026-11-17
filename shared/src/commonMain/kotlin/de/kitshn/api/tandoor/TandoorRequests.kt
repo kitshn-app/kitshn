@@ -38,7 +38,6 @@ class TandoorRequestsError(
                     ?: (response?.request?.url.toString() + " | " + response?.request?.method.toString() + " | " + response?.status.toString())
             )
             append(additionalText)
-            throwable?.stackTraceToString()?.let(::append)
         }
 
     /** Server answered with 4xx/5xx — reachable, but refused. */

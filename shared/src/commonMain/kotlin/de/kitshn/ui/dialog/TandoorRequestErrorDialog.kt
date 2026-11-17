@@ -15,7 +15,6 @@ import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -76,9 +75,11 @@ fun TandoorRequestErrorDialog(
         title = { Text(title) },
         text = {
             Column {
-                Text(stringResource(Res.string.error_request_description))
+                if(state.error?.overrideMessage == null) {
+                    Text(stringResource(Res.string.error_request_description))
+                }
 
-                if(state.error != null) {
+                if(state.error?.message != null) {
                     Spacer(Modifier.height(16.dp))
 
                     Surface(
@@ -91,30 +92,8 @@ fun TandoorRequestErrorDialog(
                             contentPadding = PaddingValues(8.dp),
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            if(state.error?.throwable?.message != null) item {
-                                Text(
-                                    text = state.error?.throwable?.message ?: ""
-                                )
-                            }
-
-                            if(state.error?.throwable != null) item {
-                                Text(
-                                    text = state.error?.throwable?.stackTraceToString() ?: ""
-                                )
-
-                                HorizontalDivider(Modifier.padding(top = 16.dp, bottom = 16.dp))
-                            }
-
-                            if(state.error?.message != null) item {
-                                Text(
-                                    text = state.error?.message ?: ""
-                                )
-                            }
-
-                            if(state.error != null) item {
-                                Text(
-                                    text = state.error?.stackTraceToString() ?: ""
-                                )
+                            item {
+                                Text(text = state.error?.message ?: "")
                             }
                         }
                     }
