@@ -13,6 +13,7 @@ import io.ktor.client.request.request
 import io.ktor.client.request.setBody
 import io.ktor.client.request.url
 import io.ktor.client.statement.HttpResponse
+import io.ktor.client.statement.bodyAsText
 import io.ktor.client.statement.readRawBytes
 import io.ktor.client.statement.request
 import io.ktor.http.ContentType
@@ -20,7 +21,9 @@ import io.ktor.http.HttpMethod
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 
 class TandoorRequestsError(
     val throwable: Throwable?,
@@ -29,17 +32,96 @@ class TandoorRequestsError(
     val overrideMessage: String? = null
 ) : Exception(throwable) {
     override val message: String
-        get() = overrideMessage ?: ((
+        get() = overrideMessage ?: buildString {
+            append(
                 throwable?.message
                     ?: (response?.request?.url.toString() + " | " + response?.request?.method.toString() + " | " + response?.status.toString())
-                )
-                + additionalText + throwable?.stackTraceToString())
+            )
+            append(additionalText)
+        }
 
     /** Server answered with 4xx/5xx — reachable, but refused. */
     val isServerRefused: Boolean get() = response != null
 
     /** No response at all — transport failure (DNS, connect, timeout, TLS, …). */
     val isNetworkFailure: Boolean get() = response == null
+}
+
+private const val MAX_ERROR_BODY_LENGTH = 4_000
+
+internal fun extractTandoorErrorMessage(body: String): String? {
+    val trimmed = body.trim()
+    if(trimmed.isEmpty()) return null
+
+    val messages = try {
+        val element = json.parseToJsonElement(trimmed)
+        val preferred = listOf("msg", "detail", "non_field_errors")
+        val preferredMessages = preferred.flatMap { key ->
+            (element as? JsonObject)?.get(key)?.let(::collectErrorValues).orEmpty()
+        }
+        if(preferredMessages.isNotEmpty()) {
+            preferredMessages
+        } else {
+            collectErrorPaths(element, path = "")
+        }
+    } catch(_: Exception) {
+        if(trimmed.startsWith("<")) return null
+        listOf(trimmed)
+    }
+
+    return messages
+        .distinct()
+        .joinToString("\n\n")
+        .take(MAX_ERROR_BODY_LENGTH)
+        .ifBlank { null }
+}
+
+private fun collectErrorValues(element: JsonElement): List<String> = when(element) {
+    is JsonPrimitive -> if(element.isString && element.content.isNotBlank()) {
+        listOf(element.content)
+    } else {
+        emptyList()
+    }
+    is JsonArray -> element.flatMap(::collectErrorValues)
+    is JsonObject -> element.entries.flatMap { (key, value) ->
+        if(key == "error" && value is JsonPrimitive && !value.isString) {
+            emptyList()
+        } else {
+            collectErrorValues(value)
+        }
+    }
+}
+
+private fun collectErrorPaths(element: JsonElement, path: String): List<String> = when(element) {
+    is JsonPrimitive -> if(element.isString && element.content.isNotBlank()) {
+        listOf(if(path.isBlank()) element.content else "$path: ${element.content}")
+    } else {
+        emptyList()
+    }
+    is JsonArray -> element.flatMapIndexed { index, value ->
+        // Field validation uses a flat array; nested objects need an index.
+        val nextPath = if(value is JsonPrimitive) {
+            path
+        } else if(path.isBlank()) {
+            "[$index]"
+        } else {
+            "$path.$index"
+        }
+        collectErrorPaths(value, nextPath)
+    }
+    is JsonObject -> element.entries.flatMap { (key, value) ->
+        if(key == "error" && value is JsonPrimitive && !value.isString) {
+            emptyList()
+        } else {
+            collectErrorPaths(value, if(path.isBlank()) key else "$path.$key")
+        }
+    }
+}
+
+private suspend fun HttpResponse.errorMessageOrNull(): String? = try {
+    extractTandoorErrorMessage(bodyAsText())
+} catch(_: Exception) {
+    null
 }
 
 suspend fun TandoorClient.reqAny(
@@ -91,8 +173,14 @@ suspend fun TandoorClient.reqAny(
 
         // 4xx/5xx still means Tandoor answered — server reachable, just refused.
         reportCallSuccess()
-        if(!response.status.isSuccess())
-            throw TandoorRequestsError(null, response)
+        if(!response.status.isSuccess()) {
+            val serverMessage = response.errorMessageOrNull()
+            throw TandoorRequestsError(
+                null,
+                response,
+                additionalText = serverMessage?.let { "\n\n$it" } ?: ""
+            )
+        }
 
         return response
     } catch(e: kotlinx.coroutines.CancellationException) {
@@ -199,8 +287,14 @@ suspend fun TandoorClient.reqMultipart(
         }
 
         reportCallSuccess()
-        if(!response.status.isSuccess())
-            throw TandoorRequestsError(null, response)
+        if(!response.status.isSuccess()) {
+            val serverMessage = response.errorMessageOrNull()
+            throw TandoorRequestsError(
+                null,
+                response,
+                additionalText = serverMessage?.let { "\n\n$it" } ?: ""
+            )
+        }
 
         return response
     } catch(e: kotlinx.coroutines.CancellationException) {
