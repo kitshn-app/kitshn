@@ -65,6 +65,9 @@ import kotlinx.coroutines.launch
 import org.jetbrains.compose.resources.stringResource
 import kotlin.math.roundToInt
 
+private const val COOK_MIN_FONT_SP = 16
+private const val COOK_MAX_FONT_SP = 28
+
 @Composable
 fun RouteRecipeCookPageStep(
     topPadding: Dp,
@@ -96,13 +99,13 @@ fun RouteRecipeCookPageStep(
             val density = LocalDensity.current
 
             val textMeasurer = rememberTextMeasurer()
-            var fontSize by remember { mutableStateOf(14.sp) }
+            var fontSize by remember { mutableStateOf(COOK_MIN_FONT_SP.sp) }
 
             val maxWidthPx = with(density) { maxWidth.roundToPx() }
             LaunchedEffect(step.instruction, sideBySideLayout) {
-                var newFontSize = 18
+                var newFontSize = COOK_MIN_FONT_SP
 
-                while(newFontSize < 44) {
+                while(newFontSize < COOK_MAX_FONT_SP) {
                     val textLayout = textMeasurer.measure(
                         text = step.instruction,
                         style = TextStyle(
@@ -115,10 +118,10 @@ fun RouteRecipeCookPageStep(
                     )
 
                     if(textLayout.size.height > maxHeightPx) break
-                    newFontSize += 2
+                    newFontSize += 1
                 }
 
-                fontSize = newFontSize.sp
+                fontSize = newFontSize.coerceIn(COOK_MIN_FONT_SP, COOK_MAX_FONT_SP).sp
             }
 
             Column(
