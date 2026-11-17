@@ -8,10 +8,11 @@ import coil3.ImageLoader
 import coil3.SingletonImageLoader
 import coil3.annotation.DelicateCoilApi
 import coil3.annotation.ExperimentalCoilApi
-import coil3.network.ktor3.KtorNetworkFetcherFactory
+import coil3.network.NetworkFetcher
 import de.kitshn.SettingsViewModel
 import de.kitshn.api.tandoor.TandoorClient
 import de.kitshn.api.tandoor.TandoorCredentials
+import de.kitshn.api.tandoor.TandoorImageNetworkClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -85,11 +86,12 @@ class TandoorSession(
 
     @OptIn(DelicateCoilApi::class, ExperimentalCoilApi::class)
     private fun updateCoilImageLoader(client: TandoorClient) {
-        val httpClient = client.httpClient
         // setSafe can only be used once, but we can update mtls later on. Disk Cache should persist
         SingletonImageLoader.setUnsafe { context ->
             ImageLoader.Builder(context)
-                .components { add(KtorNetworkFetcherFactory(httpClient = httpClient)) }
+                .components {
+                    add(NetworkFetcher.Factory(networkClient = { TandoorImageNetworkClient(client) }))
+                }
                 .build()
         }
     }
