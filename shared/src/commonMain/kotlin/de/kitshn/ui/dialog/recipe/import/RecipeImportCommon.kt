@@ -148,7 +148,9 @@ fun LazyListScope.RecipeImportCommon(
         }
 
         item {
-            var recipeName by remember { mutableStateOf(data.recipeFromSource!!.recipe!!.name) }
+            var recipeName by remember(data.recipeFromSource) {
+                mutableStateOf(data.recipeFromSource!!.recipe!!.name)
+            }
 
             OutlinedTextField(
                 modifier = Modifier
