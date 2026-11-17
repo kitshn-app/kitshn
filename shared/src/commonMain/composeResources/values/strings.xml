@@ -237,6 +237,7 @@
     <string name="error_outdated_v1_instance_title">Unsupported instance</string>
     <string name="error_outdated_v1_instance">This version of kitshn does not support Tandoor v1. Please either update to Tandoor v2 or install an older version of kitshn.</string>
     <string name="error_recipe_could_not_be_loaded">Recipe could not be loaded.</string>
+    <string name="error_social_media_post_unavailable">The post could not be read. It may be unavailable, private, or require an Instagram login.</string>
     <string name="error_request">Faulty request</string>
     <string name="error_request_description">The server could not be reached / The request could not be processed by the server.</string>
     <string name="error_unallocated_ingredients">Unallocated ingredients</string>
