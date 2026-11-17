@@ -107,6 +107,7 @@ val SOCIAL_MEDIA_IMPORT_DOMAINS = listOf(
 
 private const val MAX_DATA_URL_CHARS = 15_000_000
 private const val MAX_THUMBNAIL_BYTES = 10 * 1024 * 1024
+private const val SOCIAL_MEDIA_IMPORT_TIMEOUT_MS = 20_000L
 
 @Composable
 fun rememberRecipeImportSocialMediaDialogState(): RecipeImportSocialMediaDialogState {
@@ -279,7 +280,7 @@ fun RecipeImportSocialMediaDialog(
         delay(2000)
 
         fetchWebsiteRequestState.wrapRequest {
-            val response = withTimeoutOrNull(20_000L) {
+            val response = withTimeoutOrNull(SOCIAL_MEDIA_IMPORT_TIMEOUT_MS) {
                 var scriptResponse: SocialMediaImportScriptResponse? = null
                 while(scriptResponse == null) {
                     delay(1000)
